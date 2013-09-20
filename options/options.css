@@ -1,0 +1,195 @@
+body
+{
+	margin: 0;
+	font-family: 'lucida grande',tahoma,verdana,arial,sans-serif;
+	font-size: 12px;
+	color: #333;
+	background-color: #81a9d1;
+}
+
+a
+{
+	color: #4169e1;
+	text-decoration: none;
+}
+
+a:hover
+{
+	text-decoration: underline;
+}
+
+#All
+{
+	width: 800px;
+	margin: 8px auto;
+	background-color: white;
+	box-shadow: 1px 1px 8px rgba(0,0,0,.5);
+}
+
+#ResetButton
+{
+	color: white;
+	width: 780px;
+	margin: 8px auto;
+	display: block;
+	text-shadow: 1px 1px 4px rgba(0,0,0,.3);
+}
+
+#Left
+{
+	vertical-align: top;
+	padding: 8px;
+	display:inline-block;
+	width:200px;
+	top: 0;
+	left: 0;
+	border-right: 1px solid #81a9f1;
+}
+
+#Left > span
+{
+	color: #888;
+	font-size: .9em;
+	margin: 8px;
+	display: block;
+}
+
+#Left h3
+{
+	color: #81a9d1;
+	margin:0;
+}
+
+#ModeList
+{
+	padding: 8px;
+	background-color: white;
+}
+
+#ModeList .Item
+{
+	display: block;
+	padding: 3px;
+	color: #7199c1;
+	font-weight: bold;
+}
+
+#ModeList .Item:hover
+{
+	background-color: #eee;
+}
+
+#ModeList .Selected
+{
+	background-color: #def !important;
+}
+
+#ModeList .Item .Enabled, #ModeList .Item .Disabled
+{
+	margin: 1px;
+	height: 11px;
+	width: 11px;
+	float: right;
+}
+
+#ModeList .Item .Enabled
+{
+	background: 0px 0px url(../images/sprite.png);
+}
+
+#ModeList .Item .Disabled
+{
+	background: -11px 0px url(../images/sprite.png);
+}
+
+#Content
+{
+	vertical-align: top;
+	background-color: #EEF8FF;
+	padding: 16px;
+	display:inline-block;
+	border-left: 1px solid #81a9f1;
+	margin-left: -1px;
+}
+
+#Editors
+{
+	visibility: hidden;
+}
+
+#Editors > h2
+{
+}
+
+#Editors > h3
+{
+	vertical-align: top;
+}
+
+#Editors > h3 > span
+{
+	font-size: 12px;
+	color: #888;
+	font-weight: normal;
+	margin-left: 18px;
+	display: inline-block;
+}
+
+#Editors label
+{
+	/*font-weight: bold;*/
+}
+
+#LabelWrapper > span
+{
+	display: none;
+}
+
+#Editors input[type="text"]
+{
+	border: 1px solid #81a9f1;
+	padding: 3px;
+	margin-left: 18px
+}
+
+#Placeholder
+{
+	position:absolute;
+	margin: 80px 140px;
+	color: #888;
+}
+
+h1
+{
+	font-size: 18px;
+	/*font-style: italic;*/
+	font-family: monospace;
+	padding: 0;
+	margin: 8px 0;
+}
+
+hr
+{
+	height: 1px;
+	background-color: black;
+	border: 0;
+}
+
+.CodeMirror
+{
+	cursor: text;
+	outline: 1px solid #81a9f1;
+}
+
+.ValidationError > input
+{
+	background-color: #fdd;
+}
+
+.ValidationError > span
+{
+	display: initial !important;
+	color: #c22;
+	font-weight: bold;
+	font-style: italic;
+}
