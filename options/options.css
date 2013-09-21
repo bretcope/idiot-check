@@ -129,11 +129,26 @@ a:hover
 
 #Editors > h3 > span
 {
-	font-size: 12px;
+	font-size: 11px;
 	color: #888;
 	font-weight: normal;
 	margin: 4px 0 0 18px;
 	display: inline-block;
+}
+
+#Editors > h3 > div
+{
+	font-size: 11px;
+	color: #888;
+	/*font-weight: normal;*/
+	float: right;
+}
+
+#Editors > h3 select
+{
+	margin-left: 4px;
+	font-size: 11px;
+	color: #888;
 }
 
 #Editors label
