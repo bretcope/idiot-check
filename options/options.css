@@ -151,11 +151,6 @@ a:hover
 	color: #888;
 }
 
-#Editors label
-{
-	/*font-weight: bold;*/
-}
-
 #LabelWrapper > span
 {
 	display: none;

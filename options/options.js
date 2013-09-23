@@ -21,7 +21,9 @@ $(function ()
 		_dom.deleteButton = document.getElementById('DeleteButton');
 		_dom.labelInput = document.getElementById('LabelInput');
 		_dom.urlsInput = document.getElementById('UrlsInput');
+//		_dom.cssInjectSelect = document.getElementById('CssInjectSelect');
 		_dom.cssInput = document.getElementById('CssInput');
+//		_dom.jsInjectSelect = document.getElementById('JsInjectSelect');
 		_dom.jsInput = document.getElementById('JsInput');
 
 		_dom.labelInput.addEventListener('change', updateMode);
@@ -55,6 +57,9 @@ $(function ()
 				renderAll();
 			}
 		});
+		
+//		_dom.cssInjectSelect.addEventListener('change', updateMode);
+//		_dom.jsInjectSelect.addEventListener('change', updateMode);
 
 		var editorWidth = 550;
 
