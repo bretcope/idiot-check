@@ -41,9 +41,37 @@ var _idiotCheck = new function ()
 	/*====================================================================================
 	 // Default Properties
 	 ====================================================================================*/
+	
+	function createGetterSetter (prop, defaultValue)
+	{
+		var def = {};
+		def.get = function ()
+		{
+			if (this.__private.data[prop] !== undefined || defaultValue === undefined)
+				return this.__private.data[prop];
+			
+			//
+		};
+		def.set = function (val)
+		{
+			this.__private.changes[prop] = val;
+			this.queueSave();
+		};
+		
+		Object.defineProperty(Mode.prototype, prop, def);
+	}
 
 	Object.defineProperties(Mode.prototype,
 	{
+		'id': { get: function () { return this.__private.data.id; } },
+		'name':
+		{
+			get: function () { return this.__private.orig.data.name; },
+			set: function (val)
+			{
+				
+			}
+		},
 		'enabled':{ value:true, writable:true },
 		'urls':{
 			get:function ()
@@ -70,7 +98,8 @@ var _idiotCheck = new function ()
 		'css':{ value:'', writable:true },
 		'cssInject':{ value:'start', writable:true },
 		'js':{ value:'', writable:true },
-		'jsInject':{ value:'start', writable:true }
+		'jsInject':{ value:'start', writable:true },
+		'__private': { value: { modified: false, changes: {} } }
 	});
 
 	/*====================================================================================
@@ -176,6 +205,14 @@ var _idiotCheck = new function ()
 		
 		return obj;
 	}
+	
+	function modeFromObject (obj)
+	{
+		var mode = {};
+		mode.__proto__ = Mode.prototype;
+		mode.__private.data = obj;
+		return mode;
+	}
 
 	function saveDefaults ()
 	{
@@ -204,9 +241,27 @@ var _idiotCheck = new function ()
 	 // Public Methods - Keep in Alphabetical Order
 	 ====================================================================================*/
 	
+	Mode.prototype.queueSave = function ()
+	{
+	};
+	
 	Mode.prototype.save = function ()
 	{
 		saveDefaults();
+		
+		//verify mode has a unique name
+		if (!this.name)
+			return false;
+
+		var modes = Mode.getAll();
+
+		for (var i in modes)
+		{
+			if (modes[i].id != id && modes[i].name == this.name)
+				return false;
+		}
+
+		return true;
 	};
 	
 	Mode.prototype.delete = function ()
