@@ -1,42 +1,63 @@
-var _idiotCheck = new function ()
+var _idiotCheck = {};
+
+/*====================================================================================
+
+ Mode Class
+
+ ====================================================================================*/
+	
+_idiotCheck.Mode = function ()
 {
 	// constants
 	var STARTING_CUSTOM_ID = 1001; // give enough room for new default modes
-	var MODE_PREFIX = "mode_";
-
-	var _this = this;
-	var _modeRegex = new RegExp('^' + MODE_PREFIX + '\\d+$');
+	var NEXT_ID_KEY = 'nextId';
+	var MODE_PREFIX = 'mode_';
+	var CACHE_VERSION_KEY = 'modesCacheVersion';
+	var ANY_SAVED_KEY = 'anySaved';
 	
+	var _modeRegex = new RegExp('^' + MODE_PREFIX + '\\d+$');
+
 	var _modesCache = null;
 	var _modesCacheVersion = 0;
 
-	/*====================================================================================
-
-	 Public Utility Methods - Keep in Alphabetical Order
-
-	 ====================================================================================*/
-
-	this.resetAllDefaults = function ()
-	{
-		for (var i in localStorage)
-			delete localStorage[i];
-
-		window.location.reload();
-	};
-
-	/*====================================================================================
-
-	 Mode Class
-
-	 ====================================================================================*/
+	var _saveTimeouts = {};
 	
 	function Mode ()
 	{
 		// initialization code for new modes
-		//
+		this.__private.data = {};
+
+		//generate new ID
+		if (localStorage[NEXT_ID_KEY] === undefined)
+			localStorage[NEXT_ID_KEY] = STARTING_CUSTOM_ID;
+
+		this.__private.data.id = localStorage[NEXT_ID_KEY]++;
+		
+		// create a placeholder name for the mode which is unique
+		var modes = Mode.getAll();
+		
+		var prefix = "mode";
+		var name;
+		for (var i = 1; true; i++)
+		{
+			name = prefix + i;
+
+			for (var x in modes)
+			{
+				if (modes[x].name == name)
+				{
+					name = null;
+					break;
+				}
+			}
+
+			if (name != null)
+				break;
+		}
+		
+		this.__private.data.name = name;
+		this.save();
 	}
-	
-	this.Mode = Mode;
 
 	/*====================================================================================
 	 // Default Properties
@@ -50,12 +71,18 @@ var _idiotCheck = new function ()
 			if (this.__private.data[prop] !== undefined || defaultValue === undefined)
 				return this.__private.data[prop];
 			
-			//
+			if (typeof defaultValue === 'function')
+				return defaultValue();
+			
+			return defaultValue;
 		};
 		def.set = function (val)
 		{
-			this.__private.changes[prop] = val;
-			this.queueSave();
+			if (val !== this[prop])
+			{
+				this.__private.changes[prop] = val;
+				this.queueSave();
+			}
 		};
 		
 		Object.defineProperty(Mode.prototype, prop, def);
@@ -64,43 +91,24 @@ var _idiotCheck = new function ()
 	Object.defineProperties(Mode.prototype,
 	{
 		'id': { get: function () { return this.__private.data.id; } },
-		'name':
-		{
-			get: function () { return this.__private.orig.data.name; },
-			set: function (val)
+		'__private': {
+			get: function ()
 			{
-				
-			}
-		},
-		'enabled':{ value:true, writable:true },
-		'urls':{
-			get:function ()
-			{
-				if (!this.hasOwnProperty('urls'))
-					this.urls = [];
+				if (!this.hasOwnProperty('__private'))
+					Object.defineProperty(this, '__private', { value: { changes: {} } });
 
-				return this.urls;
-			},
-			set:function (val)
-			{
-				if (!this.hasOwnProperty('urls'))
-				{
-					Object.defineProperty(this, 'urls',
-						{
-							enumerable:true,
-							writable:true
-						});
-				}
-
-				this.urls = val;
+				return this.__private;
 			}
-		},
-		'css':{ value:'', writable:true },
-		'cssInject':{ value:'start', writable:true },
-		'js':{ value:'', writable:true },
-		'jsInject':{ value:'start', writable:true },
-		'__private': { value: { modified: false, changes: {} } }
+		}
 	});
+	
+	createGetterSetter('name');
+	createGetterSetter('enabled', true);
+	createGetterSetter('urls', function () { return []; });
+	createGetterSetter('css', '');
+	createGetterSetter('cssInject', 'start');
+	createGetterSetter('js', '');
+	createGetterSetter('jsInject', 'start');
 
 	/*====================================================================================
 	 // Static Methods - Keep in Alphabetical Order
@@ -108,15 +116,16 @@ var _idiotCheck = new function ()
 	
 	Mode.get = function (id)
 	{
+		//
 	};
 	
 	Mode.getAll = function ()
 	{
-		if (_modesCache && localStorage.modesCacheVersion == _modesCacheVersion)
+		if (_modesCache && localStorage[CACHE_VERSION_KEY] == _modesCacheVersion)
 			return _modesCache;
 		
 		var _modesCache = [];
-		if (localStorage.anySaved)
+		if (localStorage[ANY_SAVED_KEY])
 		{
 			try
 			{
@@ -141,15 +150,15 @@ var _idiotCheck = new function ()
 		_modesCache = sortModes(_modesCache);
 		
 		//update the cache version
-		if (localStorage.modesCacheVersion)
+		if (localStorage[CACHE_VERSION_KEY])
 		{
-			_modesCacheVersion = ++localStorage.modesCacheVersion;
+			_modesCacheVersion = ++localStorage[CACHE_VERSION_KEY];
 			if (_modesCacheVersion > 2000000000)
-				localStorage.modesCacheVersion = _modesCacheVersion = 1;
+				localStorage[CACHE_VERSION_KEY] = _modesCacheVersion = 1;
 		}
 		else
 		{
-			localStorage.modesCacheVersion = ++_modesCacheVersion;
+			localStorage[CACHE_VERSION_KEY] = ++_modesCacheVersion;
 		}
 
 		return _modesCache;
@@ -216,10 +225,10 @@ var _idiotCheck = new function ()
 
 	function saveDefaults ()
 	{
-		if (localStorage.anySaved)
+		if (localStorage[ANY_SAVED_KEY])
 			return;
 		
-		localStorage.anySaved = true;
+		localStorage[ANY_SAVED_KEY] = true;
 		var modes = getAllDefaultModes();
 
 		for (var i in modes)
@@ -240,35 +249,115 @@ var _idiotCheck = new function ()
 	/*====================================================================================
 	 // Public Methods - Keep in Alphabetical Order
 	 ====================================================================================*/
+
+	Mode.prototype.delete = function ()
+	{
+		saveDefaults();
+
+		delete localStorage[MODE_PREFIX + this.id];
+		localStorage[CACHE_VERSION_KEY]++;
+	};
 	
 	Mode.prototype.queueSave = function ()
 	{
+		if (!_saveTimeouts[this.id])
+			_saveTimeouts[this.id] = setTimeout(this.save.bind(this), 0);
 	};
 	
 	Mode.prototype.save = function ()
 	{
-		saveDefaults();
-		
-		//verify mode has a unique name
-		if (!this.name)
-			return false;
-
-		var modes = Mode.getAll();
-
-		for (var i in modes)
+		if (_saveTimeouts[this.id])
 		{
-			if (modes[i].id != id && modes[i].name == this.name)
-				return false;
+			clearTimeout(_saveTimeouts[this.id]);
+			delete _saveTimeouts[this.id];
+		}
+		
+		var validationErrors = this.validateChanges();
+		
+		var count = 0;
+		for (var i in this.__private.changes)
+		{
+			if (validationErrors[i])
+				continue;
+			
+			count++;
+			this.__private.data[i] = this.__private.changes[i];
+		}
+		
+		if (count > 0)
+		{
+			saveDefaults();
+			localStorage[MODE_PREFIX + this.id] = JSON.stringify(this);
+			localStorage[CACHE_VERSION_KEY]++;
 		}
 
-		return true;
+		return validationErrors;
 	};
 	
-	Mode.prototype.delete = function ()
+	Mode.prototype.toJSON = function ()
 	{
-		saveDefaults();
-		
-		//
+		return this.__private.data;
 	};
 	
-}();
+	Mode.prototype.validateChanges = function ()
+	{
+		var errors = {};
+		
+		// verify mode has a unique name
+		if (this.__private.changes.name !== undefined)
+		{
+			var name = this.__private.changes.name;
+			
+			if (!name)
+			{
+				errors.name = "The name of the mode cannot be blank.";
+			}
+			else
+			{
+				var modes = Mode.getAll();
+
+				for (var i in modes)
+				{
+					if (modes[i].id != this.id && modes[i].name == name)
+					{
+						errors.name = "This name is already in use by another mode.";
+						break;
+					}
+				}
+			}
+		}
+		
+		return errors;
+	};
+	
+	return Mode;
+	
+}(); // end of Mode class closure
+
+/*====================================================================================
+
+ Utils Class
+
+ ====================================================================================*/
+
+_idiotCheck.Utils = function ()
+{
+	function Utils ()
+	{
+	}
+	
+	/*====================================================================================
+	 Public Utility Methods - Keep in Alphabetical Order
+	 ====================================================================================*/
+	
+	Utils.resetAllDefaults = function ()
+	{
+		for (var i in localStorage)
+			delete localStorage[i];
+	
+		window.location.reload();
+	};
+	
+	return Utils;
+	
+}(); // end of Utils class closure
